@@ -14,19 +14,27 @@ declare module "@mui/material/styles" {
       pri: string;
       sec: string;
     };
+    chip: {
+      pri: string;
+      text: string
+    };
   }
   interface PaletteOptions {
-    border?: {
+    border: {
       main: string;
       secondary: string;
       hover: string;
     };
-    specialText?: {
+    specialText: {
       main: string;
     };
-    btn?: {
+    btn: {
       pri: string;
       sec: string;
+    };
+    chip: {
+      pri: string;
+      text: string
     };
   }
 }
@@ -50,6 +58,10 @@ const theme = createTheme({
     btn: {
       pri: "rgb(85, 239, 196)",
       sec: "rgb(73, 67, 218)",
+    },
+    chip: {
+      pri: "rgb(230, 230, 230)",
+      text: "rgb(51, 51, 51)"
     },
   },
   components: {
