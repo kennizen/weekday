@@ -3,6 +3,7 @@ import {
   Divider,
   IconButton,
   List,
+  ListItem,
   ListItemButton,
   ListItemText,
   ListSubheader,
@@ -12,7 +13,7 @@ import {
   Typography,
   useTheme,
 } from "@mui/material";
-import { Fragment, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Fragment, MouseEvent, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import FilterChip from "./FilterChip";
 import CloseIcon from "@mui/icons-material/Close";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
@@ -21,6 +22,7 @@ import style from "./style.module.css";
 interface IProps {
   placeholder: string;
   single?: boolean;
+  onChange?: (filters: Filter[]) => void;
 }
 
 export interface IWithCat extends IProps {
@@ -41,7 +43,7 @@ type OptionsWithCat = {
 
 type OptionsWithoutCat = Filter[];
 
-function Filter({ placeholder, options, type, single }: IWithCat | IWithoutCat) {
+function Filter({ placeholder, options, type, single, onChange }: IWithCat | IWithoutCat) {
   // state
   const [selectedRes, setSelectedRes] = useState<Filter[]>([]);
   const [value, setValue] = useState("");
@@ -62,8 +64,7 @@ function Filter({ placeholder, options, type, single }: IWithCat | IWithoutCat) 
 
   // methods
   function handleFocus() {
-    if (!inputRef.current) return;
-    inputRef.current.focus();
+    inputRef.current?.focus();
     setIsFocused(true);
     setAnchorEl((prev) => (prev ? null : autoComRef.current));
   }
@@ -93,31 +94,42 @@ function Filter({ placeholder, options, type, single }: IWithCat | IWithoutCat) 
 
         return (
           <List sx={{ maxHeight: 300, overflow: "auto" }}>
-            {Object.keys(tmpFils).map((key, idx) => (
-              <Fragment key={key + idx}>
-                <ListSubheader disableSticky sx={{ lineHeight: "28px" }}>
-                  {key}
-                </ListSubheader>
-                {tmpFils[key].map((filter, i) => (
-                  <ListItemButton
-                    onClick={() => handleAddSelectedRes(filter)}
-                    key={filter.id}
-                    sx={{
-                      marginBottom:
-                        idx !== Object.keys(tmpFils).length - 1 && i === tmpFils[key].length - 1 ? "1rem" : "0",
-                      paddingY: "5px",
-                    }}
-                  >
-                    <ListItemText
-                      primary={filter.label}
-                      primaryTypographyProps={{
-                        fontSize: "14px",
+            {Object.keys(tmpFils).length ? (
+              Object.keys(tmpFils).map((key, idx) => (
+                <Fragment key={key + idx}>
+                  <ListSubheader disableSticky sx={{ lineHeight: "28px" }}>
+                    {key}
+                  </ListSubheader>
+                  {tmpFils[key].map((filter, i) => (
+                    <ListItemButton
+                      onClick={() => handleAddSelectedRes(filter)}
+                      key={filter.id}
+                      sx={{
+                        marginBottom:
+                          idx !== Object.keys(tmpFils).length - 1 && i === tmpFils[key].length - 1 ? "1rem" : "0",
+                        paddingY: "5px",
                       }}
-                    />
-                  </ListItemButton>
-                ))}
-              </Fragment>
-            ))}
+                    >
+                      <ListItemText
+                        primary={filter.label}
+                        primaryTypographyProps={{
+                          fontSize: "14px",
+                        }}
+                      />
+                    </ListItemButton>
+                  ))}
+                </Fragment>
+              ))
+            ) : (
+              <ListItem>
+                <ListItemText
+                  primary="No Options"
+                  primaryTypographyProps={{
+                    fontSize: "14px",
+                  }}
+                />
+              </ListItem>
+            )}
           </List>
         );
       }
@@ -126,16 +138,27 @@ function Filter({ placeholder, options, type, single }: IWithCat | IWithoutCat) 
 
         return (
           <List sx={{ maxHeight: 300, overflow: "auto" }}>
-            {tmpFils.map((filter) => (
-              <ListItemButton onClick={() => handleAddSelectedRes(filter)} key={filter.id} sx={{ paddingY: "5px" }}>
+            {tmpFils.length > 0 ? (
+              tmpFils.map((filter) => (
+                <ListItemButton onClick={() => handleAddSelectedRes(filter)} key={filter.id} sx={{ paddingY: "5px" }}>
+                  <ListItemText
+                    primary={filter.label}
+                    primaryTypographyProps={{
+                      fontSize: "14px",
+                    }}
+                  />
+                </ListItemButton>
+              ))
+            ) : (
+              <ListItem>
                 <ListItemText
-                  primary={filter.label}
+                  primary="No Options"
                   primaryTypographyProps={{
                     fontSize: "14px",
                   }}
                 />
-              </ListItemButton>
-            ))}
+              </ListItem>
+            )}
           </List>
         );
       }
@@ -202,6 +225,7 @@ function Filter({ placeholder, options, type, single }: IWithCat | IWithoutCat) 
 
           return res;
         }
+
         return tmpFils;
       }
       case "no cat": {
@@ -241,10 +265,24 @@ function Filter({ placeholder, options, type, single }: IWithCat | IWithoutCat) 
     }
   }
 
+  function handleClearAllFilters(e: MouseEvent<HTMLButtonElement, globalThis.MouseEvent>) {
+    setSelectedRes([]);
+    setAnchorEl(null);
+    inputRef.current?.focus();
+    setSingleValue("");
+    setValue("");
+    setIsFocused(true);
+    e.stopPropagation();
+  }
+
   // effects
   useEffect(() => {
     initState();
   }, []);
+
+  useEffect(() => {
+    onChange?.(selectedRes);
+  }, [selectedRes]);
 
   useLayoutEffect(() => {
     handleResizeModal();
@@ -252,7 +290,10 @@ function Filter({ placeholder, options, type, single }: IWithCat | IWithoutCat) 
 
   return (
     <ClickAwayListener onClickAway={handleClickAway}>
-      <div>
+      <Stack height="59px" justifyContent="flex-end">
+        {(selectedRes.length > 0 || singleValue.length > 0 || value.length > 0) && (
+          <Typography variant="body2">{placeholder}</Typography>
+        )}
         <Stack
           ref={autoComRef}
           direction="row"
@@ -288,15 +329,7 @@ function Filter({ placeholder, options, type, single }: IWithCat | IWithoutCat) 
             placeholder={selectedRes.length > 0 ? undefined : placeholder}
             className={`${style["autocomplete-input"]}`}
             fontWeight={300}
-            size={
-              value.length > 1
-                ? value.length - 0.5
-                : value.length > 0
-                ? value.length
-                : selectedRes.length > 0
-                ? 1
-                : placeholder?.length - 0.5
-            }
+            size={singleValue.length > 0 ? singleValue.length : selectedRes.length > 0 ? 1 : placeholder?.length - 0.5}
             value={value || singleValue}
             onChange={(e) => {
               setValue(e.target.value);
@@ -305,7 +338,7 @@ function Filter({ placeholder, options, type, single }: IWithCat | IWithoutCat) 
           />
 
           <Stack direction="row" alignItems="center" gap="7px">
-            {selectedRes.length > 0 && (
+            {(selectedRes.length > 0 || singleValue.length > 0 || value.length > 0) && (
               <IconButton
                 sx={{
                   padding: "8px 0",
@@ -317,6 +350,7 @@ function Filter({ placeholder, options, type, single }: IWithCat | IWithoutCat) 
                     },
                   },
                 }}
+                onClick={handleClearAllFilters}
               >
                 <CloseIcon
                   fontSize="small"
@@ -358,7 +392,7 @@ function Filter({ placeholder, options, type, single }: IWithCat | IWithoutCat) 
         >
           <Paper elevation={2}>{generateList(filteredRes)}</Paper>
         </Popper>
-      </div>
+      </Stack>
     </ClickAwayListener>
   );
 }

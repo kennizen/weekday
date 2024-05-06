@@ -240,11 +240,19 @@ export const Remote: IWithoutCat["options"] = [
   },
   {
     id: "2",
-    label: "Hybrid",
+    label: "Mumbai",
   },
   {
     id: "3",
-    label: "In-Office",
+    label: "Delhi NCR",
+  },
+  {
+    id: "4",
+    label: "Chennai",
+  },
+  {
+    id: "5",
+    label: "Banglore",
   },
 ];
 
@@ -280,5 +288,72 @@ export const MinBasePay: IWithoutCat["options"] = [
   {
     id: "8",
     label: "70L",
+  },
+];
+
+export const TechStack: IWithoutCat["options"] = [
+  {
+    id: "1",
+    label: "Python",
+  },
+  {
+    id: "2",
+    label: "Java",
+  },
+  {
+    id: "3",
+    label: "GoLang",
+  },
+  {
+    id: "4",
+    label: "Ruby/Rails",
+  },
+  {
+    id: "5",
+    label: "C++",
+  },
+  {
+    id: "6",
+    label: "Kotlin",
+  },
+  {
+    id: "7",
+    label: "Django",
+  },
+  {
+    id: "8",
+    label: "C#",
+  },
+  {
+    id: "9",
+    label: "GraphQL",
+  },
+  {
+    id: "10",
+    label: "Flask",
+  },
+  {
+    id: "11",
+    label: "Typescript",
+  },
+  {
+    id: "12",
+    label: "AWS",
+  },
+  {
+    id: "13",
+    label: "Javascript",
+  },
+  {
+    id: "14",
+    label: "Rust",
+  },
+  {
+    id: "15",
+    label: "Node JS",
+  },
+  {
+    id: "16",
+    label: "React",
   },
 ];

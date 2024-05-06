@@ -3,11 +3,11 @@ import { styled } from "@mui/material/styles";
 
 export const CustomBtn = styled(Button, {
   shouldForwardProp(propName) {
-    return propName !== "bgCol";
+    return propName !== "bgCol" && propName !== "textCol";
   },
-})<{ bgCol?: string }>(({ bgCol }) => ({
+})<{ bgCol?: string; textCol?: string }>(({ bgCol, textCol }) => ({
   backgroundColor: bgCol,
-  color: "black",
+  color: textCol,
   padding: "8px 18px",
   borderRadius: "8px",
   fontWeight: 500,
@@ -16,4 +16,4 @@ export const CustomBtn = styled(Button, {
   "&:hover": {
     backgroundColor: bgCol,
   },
-}))
+}));
