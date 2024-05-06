@@ -89,7 +89,7 @@ const JobCards = () => {
           <CircularProgress size={20} />
         </Stack>
       )}
-      {filteredJobs.length > 0 && <div ref={observerRef} style={{ width: "100%", height: 10 }}></div>}
+      {!loading && <div ref={observerRef} style={{ width: "100%", height: 10 }}></div>}
     </>
   );
 };

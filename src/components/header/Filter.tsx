@@ -19,21 +19,21 @@ import CloseIcon from "@mui/icons-material/Close";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import style from "./style.module.css";
 
-interface IProps {
+type IProps<T extends boolean = false> = {
   placeholder: string;
-  single?: boolean;
-  onChange?: (filters: Filter[]) => void;
-}
+  single: T;
+  onChange?: (filters: T extends true ? Filter : Filter[]) => void;
+};
 
-export interface IWithCat extends IProps {
+export type IWithCat = {
   type: "cat";
   options: OptionsWithCat;
-}
+} & (IProps<true> | IProps<false>);
 
-export interface IWithoutCat extends IProps {
+export type IWithoutCat = {
   type: "no cat";
   options: OptionsWithoutCat;
-}
+} & (IProps<true> | IProps<false>);
 
 type Filter = { label: string; id: string };
 
@@ -47,7 +47,7 @@ function Filter({ placeholder, options, type, single, onChange }: IWithCat | IWi
   // state
   const [selectedRes, setSelectedRes] = useState<Filter[]>([]);
   const [value, setValue] = useState("");
-  const [singleValue, setSingleValue] = useState("");
+  const [singleValue, setSingleValue] = useState<Filter>({ id: "", label: "" });
   const [isFocused, setIsFocused] = useState(false);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [filters, setFilters] = useState<OptionsWithCat | OptionsWithoutCat | null>(null);
@@ -169,7 +169,7 @@ function Filter({ placeholder, options, type, single, onChange }: IWithCat | IWi
 
   function handleAddSelectedRes(filter: Filter) {
     if (single) {
-      setSingleValue(filter.label);
+      setSingleValue({ id: filter.id, label: filter.label });
     } else {
       setSelectedRes((prev) => [...prev, filter]);
       setValue("");
@@ -232,9 +232,9 @@ function Filter({ placeholder, options, type, single, onChange }: IWithCat | IWi
         const tmpFils = structuredClone(filters) as IWithoutCat["options"];
         const res = [] as IWithoutCat["options"];
 
-        if (single && singleValue.trim().length > 0) {
+        if (single && singleValue.label.trim().length > 0) {
           tmpFils.forEach((fil, i) => {
-            if (fil.label === singleValue) {
+            if (fil.label === singleValue.label) {
               tmpFils.splice(i, 1);
             }
           });
@@ -265,14 +265,12 @@ function Filter({ placeholder, options, type, single, onChange }: IWithCat | IWi
     }
   }
 
-  function handleClearAllFilters(e: MouseEvent<HTMLButtonElement, globalThis.MouseEvent>) {
+  function handleClearAllFilters(_: MouseEvent<HTMLButtonElement, globalThis.MouseEvent>) {
     setSelectedRes([]);
-    setAnchorEl(null);
     inputRef.current?.focus();
-    setSingleValue("");
+    setSingleValue({ id: "", label: "" });
     setValue("");
     setIsFocused(true);
-    e.stopPropagation();
   }
 
   // effects
@@ -281,8 +279,9 @@ function Filter({ placeholder, options, type, single, onChange }: IWithCat | IWi
   }, []);
 
   useEffect(() => {
-    onChange?.(selectedRes);
-  }, [selectedRes]);
+    if (single) onChange?.(singleValue);
+    else onChange?.(selectedRes);
+  }, [selectedRes, singleValue.label]);
 
   useLayoutEffect(() => {
     handleResizeModal();
@@ -291,7 +290,7 @@ function Filter({ placeholder, options, type, single, onChange }: IWithCat | IWi
   return (
     <ClickAwayListener onClickAway={handleClickAway}>
       <Stack height="59px" justifyContent="flex-end">
-        {(selectedRes.length > 0 || singleValue.length > 0 || value.length > 0) && (
+        {(selectedRes.length > 0 || singleValue.label.length > 0 || value.length > 0) && (
           <Typography variant="body2">{placeholder}</Typography>
         )}
         <Stack
@@ -329,16 +328,22 @@ function Filter({ placeholder, options, type, single, onChange }: IWithCat | IWi
             placeholder={selectedRes.length > 0 ? undefined : placeholder}
             className={`${style["autocomplete-input"]}`}
             fontWeight={300}
-            size={singleValue.length > 0 ? singleValue.length : selectedRes.length > 0 ? 1 : placeholder?.length - 0.5}
-            value={value || singleValue}
+            size={
+              singleValue.label.length > 0
+                ? singleValue.label.length
+                : selectedRes.length > 0
+                ? 1
+                : placeholder?.length - 0.5
+            }
+            value={value || singleValue.label}
             onChange={(e) => {
               setValue(e.target.value);
-              setSingleValue("");
+              setSingleValue({ id: "", label: "" });
             }}
           />
 
           <Stack direction="row" alignItems="center" gap="7px">
-            {(selectedRes.length > 0 || singleValue.length > 0 || value.length > 0) && (
+            {(selectedRes.length > 0 || singleValue.label.length > 0 || value.length > 0) && (
               <IconButton
                 sx={{
                   padding: "8px 0",
