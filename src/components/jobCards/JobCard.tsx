@@ -1,7 +1,12 @@
 import { Box, Stack, Typography, useTheme } from "@mui/material";
 import { CustomBtn } from "../styledComponents/button/CustomBtn";
+import { Job } from "./JobCards";
 
-const JobCard = () => {
+interface IProps {
+  job: Job;
+}
+
+const JobCard = ({ job }: IProps) => {
   // hooks
   const theme = useTheme();
 
@@ -30,22 +35,26 @@ const JobCard = () => {
         <Typography variant="caption">⌛ Posted 10 days ago</Typography>
       </Stack>
 
-      <Stack direction="row" gap="0.3rem" mb="0.7rem">
-        <Stack>image</Stack>
+      <Stack direction="row" gap="0.5rem" mb="0.7rem">
+        <Stack sx={{ width: 40, height: 40 }}>
+          <img src={job.logoUrl} alt="job logo" loading="lazy" fetchpriority="low" />
+        </Stack>
         <Stack>
           <Typography variant="body2" color={theme.palette.text.secondary}>
-            Company name
+            {job.companyName}
           </Typography>
-          <Typography>Backend Engineer</Typography>
+          <Typography sx={{ textTransform: "capitalize" }}>{job.jobRole}</Typography>
           <Stack direction="row" alignItems="center" gap="0.3rem">
-            <Typography variant="caption">Banglore</Typography>|
-            <Typography variant="caption">Exp: 5-5 years</Typography>
+            <Typography variant="caption" sx={{ textTransform: "capitalize" }}>
+              {job.location}
+            </Typography>
+            |<Typography variant="caption">Exp: {`${job.minExp}-${job.maxExp}`} years</Typography>
           </Stack>
         </Stack>
       </Stack>
 
-      <Typography variant="body2" color={theme.palette.specialText.main} mb="0.5rem">
-        Estimated salary
+      <Typography variant="body2" fontWeight={300} color={theme.palette.specialText.main} mb="0.5rem">
+        Estimated salary ${`${job.minJdSalary} - ${job.maxJdSalary}`} KPA ✅
       </Typography>
 
       <Typography>About Company:</Typography>
@@ -54,15 +63,7 @@ const JobCard = () => {
       </Typography>
 
       <Box sx={{ height: "15rem", position: "relative", overflow: "hidden" }}>
-        <Typography variant="body2">
-          Lorem, ipsum dolor sit amet consectetur adipisicing elit. Repudiandae earum dolorem enim, placeat eius,
-          dignissimos aliquam voluptatum sequi hic expedita quae laboriosam. Quas, consequatur quidem repellendus
-          provident voluptates ipsa quod? Lorem ipsum dolor sit amet consectetur adipisicing elit. Soluta perspiciatis
-          veniam corporis animi modi, veritatis distinctio doloremque unde laudantium adipisci possimus atque enim ullam
-          libero minus eius beatae fugit eligendi. Lorem, ipsum dolor sit amet consectetur adipisicing elit. Harum
-          expedita excepturi temporibus voluptates rerum illum alias quaerat, nostrum dolorum incidunt cumque, itaque
-          vel aperiam, corrupti ratione atque tenetur consequuntur accusantium?
-        </Typography>
+        <Typography variant="body2">{job.jobDetailsFromCompany}</Typography>
         <Stack
           alignItems="center"
           justifyContent="flex-end"
@@ -78,7 +79,7 @@ const JobCard = () => {
         >
           <Typography
             component="a"
-            href="#"
+            href={job.jdLink}
             variant="body2"
             fontWeight={300}
             color={theme.palette.border.secondary}
@@ -93,7 +94,7 @@ const JobCard = () => {
         Minimum Experience
       </Typography>
       <Typography variant="body2" mb="0.5rem">
-        2 years
+        {job.minExp} years
       </Typography>
 
       <CustomBtn bgCol={theme.palette.btn.pri} textCol="black">

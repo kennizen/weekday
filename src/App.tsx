@@ -4,7 +4,7 @@ import JobCards from "./components/jobCards/JobCards";
 
 function App() {
   return (
-    <Stack sx={{ height: "100dvh", overflowX: "hidden", overflowY: "auto", padding: "1.3rem 2rem", gap: "3rem" }}>
+    <Stack sx={{ height: "100dvh", overflowX: "hidden", overflowY: "auto", padding: "1.3rem 2rem" }}>
       <Header />
       <JobCards />
     </Stack>
