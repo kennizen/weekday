@@ -12,7 +12,7 @@ import {
   Typography,
   useTheme,
 } from "@mui/material";
-import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import FilterChip from "./FilterChip";
 import CloseIcon from "@mui/icons-material/Close";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
@@ -20,8 +20,7 @@ import style from "./style.module.css";
 
 interface IProps {
   placeholder: string;
-  /** must be unique for every filter */
-  modalId: string;
+  single?: boolean;
 }
 
 export interface IWithCat extends IProps {
@@ -34,21 +33,19 @@ export interface IWithoutCat extends IProps {
   options: OptionsWithoutCat;
 }
 
-type SelectedRes = {
-  id: string;
-  label: string;
-};
+type Filter = { label: string; id: string };
 
 type OptionsWithCat = {
-  [key: string]: { label: string; id: string }[];
+  [key: string]: Filter[];
 };
 
-type OptionsWithoutCat = { label: string; id: string }[];
+type OptionsWithoutCat = Filter[];
 
-function Filter({ placeholder, modalId, options, type }: IWithCat | IWithoutCat) {
+function Filter({ placeholder, options, type, single }: IWithCat | IWithoutCat) {
   // state
-  const [selectedRes, setSelectedRes] = useState<SelectedRes[]>([]);
+  const [selectedRes, setSelectedRes] = useState<Filter[]>([]);
   const [value, setValue] = useState("");
+  const [singleValue, setSingleValue] = useState("");
   const [isFocused, setIsFocused] = useState(false);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [filters, setFilters] = useState<OptionsWithCat | OptionsWithoutCat | null>(null);
@@ -57,19 +54,18 @@ function Filter({ placeholder, modalId, options, type }: IWithCat | IWithoutCat)
   const showModal = Boolean(anchorEl);
 
   // hooks
+  const modalId = useId();
   const theme = useTheme();
   const inputRef = useRef<null | HTMLInputElement>(null);
   const autoComRef = useRef<HTMLDivElement | null>(null);
-  const filteredRes = useMemo(() => {
-    return filters ?? [];
-  }, [filters]);
+  const filteredRes = useMemo(handleFilterList, [filters, selectedRes, value, singleValue]);
 
   // methods
   function handleFocus() {
     if (!inputRef.current) return;
     inputRef.current.focus();
     setIsFocused(true);
-    setAnchorEl(autoComRef.current);
+    setAnchorEl((prev) => (prev ? null : autoComRef.current));
   }
 
   function handleClickAway() {
@@ -97,12 +93,27 @@ function Filter({ placeholder, modalId, options, type }: IWithCat | IWithoutCat)
 
         return (
           <List sx={{ maxHeight: 300, overflow: "auto" }}>
-            {Object.keys(tmpFils).map((key, i) => (
-              <Fragment key={key + i}>
-                <ListSubheader sx={{ position: "static" }}>{key}</ListSubheader>
-                {tmpFils[key].map((filter) => (
-                  <ListItemButton key={filter.id}>
-                    <ListItemText primary={filter.label} />
+            {Object.keys(tmpFils).map((key, idx) => (
+              <Fragment key={key + idx}>
+                <ListSubheader disableSticky sx={{ lineHeight: "28px" }}>
+                  {key}
+                </ListSubheader>
+                {tmpFils[key].map((filter, i) => (
+                  <ListItemButton
+                    onClick={() => handleAddSelectedRes(filter)}
+                    key={filter.id}
+                    sx={{
+                      marginBottom:
+                        idx !== Object.keys(tmpFils).length - 1 && i === tmpFils[key].length - 1 ? "1rem" : "0",
+                      paddingY: "5px",
+                    }}
+                  >
+                    <ListItemText
+                      primary={filter.label}
+                      primaryTypographyProps={{
+                        fontSize: "14px",
+                      }}
+                    />
                   </ListItemButton>
                 ))}
               </Fragment>
@@ -116,8 +127,13 @@ function Filter({ placeholder, modalId, options, type }: IWithCat | IWithoutCat)
         return (
           <List sx={{ maxHeight: 300, overflow: "auto" }}>
             {tmpFils.map((filter) => (
-              <ListItemButton key={filter.id}>
-                <ListItemText primary={filter.label} />
+              <ListItemButton onClick={() => handleAddSelectedRes(filter)} key={filter.id} sx={{ paddingY: "5px" }}>
+                <ListItemText
+                  primary={filter.label}
+                  primaryTypographyProps={{
+                    fontSize: "14px",
+                  }}
+                />
               </ListItemButton>
             ))}
           </List>
@@ -128,6 +144,103 @@ function Filter({ placeholder, modalId, options, type }: IWithCat | IWithoutCat)
     }
   }
 
+  function handleAddSelectedRes(filter: Filter) {
+    if (single) {
+      setSingleValue(filter.label);
+    } else {
+      setSelectedRes((prev) => [...prev, filter]);
+      setValue("");
+    }
+    setAnchorEl(null);
+  }
+
+  function handleDeleteSelectedRes(filter: Filter) {
+    const selRes = structuredClone(selectedRes);
+    const idx = selRes.findIndex((el) => el.id === filter.id && el.label === filter.label);
+
+    if (!inputRef.current) return;
+    if (idx < 0) return;
+
+    selRes.splice(idx, 1);
+    setSelectedRes(selRes);
+
+    inputRef.current.focus();
+    setIsFocused(true);
+    setAnchorEl(null);
+  }
+
+  function handleFilterList() {
+    if (filters === null) return [];
+
+    switch (type) {
+      case "cat": {
+        const tmpFils = structuredClone(filters) as IWithCat["options"];
+        const res = {} as IWithCat["options"];
+
+        selectedRes.forEach((res) => {
+          Object.values(tmpFils).forEach((val) => {
+            const idx = val.findIndex((v) => v.id === res.id && v.label === res.label);
+            if (idx > -1) {
+              val.splice(idx, 1);
+            }
+          });
+        });
+
+        if (value.trim().length > 0) {
+          Object.keys(tmpFils).forEach((key) =>
+            tmpFils[key].forEach((el) => {
+              const idx = el.label.toLowerCase().indexOf(value.toLowerCase());
+
+              if (idx > -1) {
+                if (res[key] === undefined) {
+                  res[key] = [];
+                }
+                res[key].push({ id: el.id, label: el.label });
+              }
+            })
+          );
+
+          return res;
+        }
+        return tmpFils;
+      }
+      case "no cat": {
+        const tmpFils = structuredClone(filters) as IWithoutCat["options"];
+        const res = [] as IWithoutCat["options"];
+
+        if (single && singleValue.trim().length > 0) {
+          tmpFils.forEach((fil, i) => {
+            if (fil.label === singleValue) {
+              tmpFils.splice(i, 1);
+            }
+          });
+
+          return tmpFils;
+        } else {
+          selectedRes.forEach((res) => {
+            tmpFils.forEach((fil, i) => {
+              if (fil.id === res.id && fil.label === res.label) {
+                tmpFils.splice(i, 1);
+              }
+            });
+          });
+        }
+
+        if (value.trim().length > 0) {
+          tmpFils.forEach((fil) => {
+            if (fil.label.toLowerCase().indexOf(value.toLowerCase()) > -1) {
+              res.push(fil);
+            }
+          });
+
+          return res;
+        }
+
+        return tmpFils;
+      }
+    }
+  }
+
   // effects
   useEffect(() => {
     initState();
@@ -135,7 +248,7 @@ function Filter({ placeholder, modalId, options, type }: IWithCat | IWithoutCat)
 
   useLayoutEffect(() => {
     handleResizeModal();
-  }, [value, isFocused]);
+  }, [value, isFocused, selectedRes, anchorEl]);
 
   return (
     <ClickAwayListener onClickAway={handleClickAway}>
@@ -160,10 +273,10 @@ function Filter({ placeholder, modalId, options, type }: IWithCat | IWithoutCat)
           }}
           onClick={handleFocus}
         >
-          {selectedRes.length > 0 && (
+          {selectedRes.length > 0 && !single && (
             <Stack direction="row" alignItems="center" gap="5px">
-              {selectedRes.map((res) => (
-                <FilterChip key={res.id} {...res} />
+              {selectedRes.map((res, i) => (
+                <FilterChip key={res.id + i} {...res} onDelete={handleDeleteSelectedRes} />
               ))}
             </Stack>
           )}
@@ -172,13 +285,23 @@ function Filter({ placeholder, modalId, options, type }: IWithCat | IWithoutCat)
             ref={inputRef}
             component="input"
             variant="body2"
-            placeholder={placeholder}
+            placeholder={selectedRes.length > 0 ? undefined : placeholder}
             className={`${style["autocomplete-input"]}`}
             fontWeight={300}
-            size={value.length > 0 ? value.length - 1 : placeholder?.length - 1}
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            sx={{ cursor: "default" }}
+            size={
+              value.length > 1
+                ? value.length - 0.5
+                : value.length > 0
+                ? value.length
+                : selectedRes.length > 0
+                ? 1
+                : placeholder?.length - 0.5
+            }
+            value={value || singleValue}
+            onChange={(e) => {
+              setValue(e.target.value);
+              setSingleValue("");
+            }}
           />
 
           <Stack direction="row" alignItems="center" gap="7px">
@@ -230,9 +353,10 @@ function Filter({ placeholder, modalId, options, type }: IWithCat | IWithoutCat)
           disablePortal
           sx={{
             marginTop: "10px !important",
+            zIndex: 10,
           }}
         >
-          <Paper elevation={1}>{generateList(filteredRes)}</Paper>
+          <Paper elevation={2}>{generateList(filteredRes)}</Paper>
         </Popper>
       </div>
     </ClickAwayListener>

@@ -1,10 +1,11 @@
 import CloseIcon from "@mui/icons-material/Close";
 import { IconButton, Stack, Typography, alpha, useTheme } from "@mui/material";
+import Filter from "./Filter";
 
 interface IProps {
   id: string;
   label: string;
-  onDelete?: (id: string) => void;
+  onDelete?: (filter: Filter) => void;
 }
 
 const FilterChip = ({ id, label, onDelete }: IProps) => {
@@ -22,7 +23,10 @@ const FilterChip = ({ id, label, onDelete }: IProps) => {
         {label}
       </Typography>
       <IconButton
-        onClick={() => onDelete?.(id)}
+        onClick={(e) => {
+          onDelete?.({ id, label });
+          e.stopPropagation();
+        }}
         sx={{
           borderRadius: "2px",
           padding: "4px",
