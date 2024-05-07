@@ -1,20 +1,18 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 import Filter from "../components/header/Filter";
 
-type InitState = {
+type FilterState = {
   roles: Filter[];
-  numOfEmployees: Filter[];
   minExp: Filter;
   location: Filter[];
   minBasePay: Filter;
   companyName: string;
 };
 
-const initialState: InitState = {
+const initialState: FilterState = {
   location: [],
   minBasePay: { id: "", label: "" },
   minExp: { id: "", label: "" },
-  numOfEmployees: [],
   roles: [],
   companyName: "",
 };
@@ -32,9 +30,6 @@ export const FilterSlice = createSlice({
     minExp: (state, action: PayloadAction<Filter>) => {
       state.minExp = action.payload;
     },
-    numOfEmployees: (state, action: PayloadAction<Filter[]>) => {
-      state.numOfEmployees = action.payload;
-    },
     roles: (state, action: PayloadAction<Filter[]>) => {
       state.roles = action.payload;
     },
@@ -44,6 +39,6 @@ export const FilterSlice = createSlice({
   },
 });
 
-export const { companyName, location, minBasePay, minExp, numOfEmployees, roles } = FilterSlice.actions;
+export const { companyName, location, minBasePay, minExp, roles } = FilterSlice.actions;
 
 export default FilterSlice.reducer;

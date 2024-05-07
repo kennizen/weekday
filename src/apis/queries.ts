@@ -9,10 +9,11 @@ export async function getJobs<T>(offset: number = 1, limit: number = 10): Promis
     offset: offset,
   });
 
-  const requestOptions = {
+  const requestOptions: RequestInit = {
     method: "POST",
     headers: myHeaders,
     body,
+    signal: AbortSignal.timeout(5000),
   };
 
   try {

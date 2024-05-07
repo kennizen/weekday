@@ -21,6 +21,10 @@ import style from "./style.module.css";
 
 type IProps<T extends boolean = false> = {
   placeholder: string;
+  /**
+   * Setting this prop results in the autocomplete to switch from single select to multi select
+   * @default false
+   */
   single: T;
   onChange?: (filters: T extends true ? Filter : Filter[]) => void;
 };
@@ -56,7 +60,7 @@ function Filter({ placeholder, options, type, single, onChange }: IWithCat | IWi
   const showModal = Boolean(anchorEl);
 
   // hooks
-  const modalId = useId();
+  const modalId = useId(); // generated id to uniquely identify every modal, used in resizing modal.
   const theme = useTheme();
   const inputRef = useRef<null | HTMLInputElement>(null);
   const autoComRef = useRef<HTMLDivElement | null>(null);
@@ -74,6 +78,10 @@ function Filter({ placeholder, options, type, single, onChange }: IWithCat | IWi
     setAnchorEl(null);
   }
 
+  /**
+   * Handler to resize the modal based on the parent
+   * @returns void
+   */
   function handleResizeModal() {
     if (!autoComRef.current) return;
 
@@ -335,7 +343,7 @@ function Filter({ placeholder, options, type, single, onChange }: IWithCat | IWi
                 ? 1
                 : placeholder?.length - 0.5
             }
-            value={value || singleValue.label}
+            value={singleValue.label || value}
             onChange={(e) => {
               setValue(e.target.value);
               setSingleValue({ id: "", label: "" });

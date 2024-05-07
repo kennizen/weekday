@@ -1,3 +1,31 @@
+### Please note there are 2 commits with my work id as I forgot to switch the user 😅.
+
+# Starting the project
+
+```
+git clone https://github.com/kennizen/weekday.git
+```
+
+## Install the dependencies
+
+```
+npm install
+```
+
+## Run the project locally
+
+```
+npm run dev
+```
+## Components and Functionalities implemented
+
+1. Custom Autocomplete.
+2. Job Cards.
+3. Infinite Scroll.
+4. Redux global state management.
+5. Global theme.
+6. Full type safety with Typescript.
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

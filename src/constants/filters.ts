@@ -252,42 +252,42 @@ export const Remote: IWithoutCat["options"] = [
   },
   {
     id: "5",
-    label: "Banglore",
+    label: "Bangalore",
   },
 ];
 
 export const MinBasePay: IWithoutCat["options"] = [
   {
     id: "1",
-    label: "0L",
+    label: "0K",
   },
   {
     id: "2",
-    label: "10L",
+    label: "10K",
   },
   {
     id: "3",
-    label: "20L",
+    label: "20K",
   },
   {
     id: "4",
-    label: "30L",
+    label: "30K",
   },
   {
     id: "5",
-    label: "40L",
+    label: "40K",
   },
   {
     id: "6",
-    label: "50L",
+    label: "50K",
   },
   {
     id: "7",
-    label: "60L",
+    label: "60K",
   },
   {
     id: "8",
-    label: "70L",
+    label: "70K",
   },
 ];
 
