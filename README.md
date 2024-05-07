@@ -26,6 +26,10 @@ npm run dev
 5. Global theme.
 6. Full type safety with Typescript.
 
+### Here is a link to the deployed app in netlify.
+
+https://main--weekdayui.netlify.app/
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
